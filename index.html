@@ -77,9 +77,27 @@
             transition: all 0.2s; font-weight: 700; color: #64748b; text-align: center; background: #fff;
         }
         .cat-card.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; }
+
+        /* --- CONSOLE DE DEBUG AMELIOREE --- */
+        #debug-panel {
+            position: fixed; top: 10px; left: 10px; width: 300px; max-height: 200px;
+            background: rgba(0, 0, 0, 0.85); color: #0f0; font-family: 'JetBrains Mono', monospace; 
+            font-size: 10px; border-radius: 10px; padding: 12px; z-index: 10001; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-y: auto; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .debug-line { margin-bottom: 4px; border-left: 2px solid #0f0; padding-left: 6px; }
+        .debug-error { color: #ff4444; border-color: #ff4444; }
+        .debug-info { color: #44aaff; border-color: #44aaff; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-6 pb-12">
+
+    <!-- CONSOLE DE DEBUG GÉANTE -->
+    <div id="debug-panel">
+        <div style="font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 8px; padding-bottom: 4px;">LEVELUP SYSTEM LOGS</div>
+        <div id="debug-content"></div>
+    </div>
 
     <!-- LOADER -->
     <div id="intro-loader">
@@ -140,13 +158,18 @@
                 <div class="flex justify-between mt-4">
                     <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-1" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">Soumis</span></div>
                     <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-2" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">En attente</span></div>
-                    <div class="flex flex-col items-center gap-2 w-20 text-center"><div id="node-3" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">En cours</span></div>
+                    <div class="flex flex-col items-center gap-2 w-20 text-center"><div id="node-3" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">En cours de traitement</span></div>
                     <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-4" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">Publié</span></div>
                 </div>
             </div>
 
             <!-- STATUS BOX -->
-            <div id="status-box" class="status-info mb-8"></div>
+            <div id="status-box" class="status-info mb-8">
+                <div class="animate-pulse flex space-y-4 flex-col">
+                    <div class="h-2 bg-slate-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-200 rounded"></div>
+                </div>
+            </div>
 
             <!-- BUTTONS -->
             <div class="flex flex-col gap-4">
@@ -216,10 +239,34 @@
             <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-green-100/50">
                 <i data-lucide="check-circle-2" class="w-10 h-10"></i>
             </div>
-            <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Demande soumise !</h2>
+            
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Demande soumise avec succès !</h2>
+            
+            <div class="space-y-5 text-slate-600 text-[13px] font-semibold leading-relaxed mb-10 text-center">
+                <p>Votre demande prendra entre <span class="text-blue-600 font-bold">2 à 5 jours</span> pour être prête.</p>
+                
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-amber-800 text-xs text-left">
+                    <div class="flex items-center gap-2 mb-2 justify-center">
+                        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                        <span class="font-black uppercase tracking-wider">Vérification de sécurité</span>
+                    </div>
+                    Le système vérifiera si votre compte est <strong>privé</strong> ou s'il <strong>existe</strong> réellement. Si vous avez un compte privé ou si vous avez fourni de faux identifiants, votre demande sera <strong>suspendue et rejetée</strong>.
+                </div>
+                
+                <p>Revenez de temps en temps pour voir l'avancée de votre demande.</p>
+                
+                <a href="https://levelupia0-debug.github.io/Level-up-condition-d-utilisation-est-de-s-curit-/" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-bold border-b-2 border-blue-100 pb-1 mt-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Consulter notre page officielle
+                </a>
+            </div>
+
             <button onclick="location.reload()" class="w-full btn-action btn-submit">Retour au Hub</button>
         </div>
 
+        <div class="mt-10 text-center">
+            <p class="text-[8px] font-black text-slate-300 tracking-[0.3em] uppercase">LevelUp © 2026</p>
+        </div>
     </main>
 
     <script type="module">
@@ -227,7 +274,7 @@
         import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyBBJGVLBN2a2-CaoSH4Jtn3aRjIHqOO-7E",
             authDomain: "bonteia.firebaseapp.com",
             projectId: "bonteia",
@@ -236,102 +283,154 @@
             appId: "1:665809390410:web:4fd0930b09aecd8f90cfb3"
         };
 
-        const appId = 'levelup-studio';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'levelup-studio';
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        // --- GESTION LOGS CONSOLE IHM ---
+        const debugContent = document.getElementById('debug-content');
+        function logDebug(msg, type = "info") {
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = `debug-line ${type === 'error' ? 'debug-error' : type === 'info' ? 'debug-info' : ''}`;
+            line.innerHTML = `<span style="opacity: 0.5">[${time}]</span> ${msg}`;
+            
+            // On garde les 15 derniers messages pour ne pas saturer
+            if (debugContent.children.length > 15) {
+                debugContent.removeChild(debugContent.firstChild);
+            }
+            
+            debugContent.appendChild(line);
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${msg}`);
+        }
 
-        let targetMillis = 0;
-        let isSessionOpen = false;
+        let studioSettings = { 
+            isSessionOpen: false, 
+            progress: 0, 
+            targetDate: 0, 
+            statusTitle: "", 
+            statusDescription: "" 
+        };
+
+        async function initAuth() {
+            logDebug("Tentative d'authentification...", "info");
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                logDebug(`ERREUR AUTH: ${err.message}`, "error");
+            }
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-                onSnapshot(settingsRef, (snap) => {
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        
-                        // FIX CRUCIAL DU COMPTE À REBOURS
-                        if (data.targetDate) {
-                            // Cas 1: C'est un Timestamp Firestore (Objet avec .seconds)
-                            if (data.targetDate.seconds) {
-                                targetMillis = data.targetDate.seconds * 1000;
-                            } 
-                            // Cas 2: C'est un simple Nombre (ex: 1772187872000)
-                            else if (typeof data.targetDate === 'number') {
-                                targetMillis = data.targetDate;
-                            }
-                            // Cas 3: C'est une chaîne de caractères (Date ISO)
-                            else if (typeof data.targetDate === 'string') {
-                                targetMillis = new Date(data.targetDate).getTime();
-                            }
-                        }
-
-                        isSessionOpen = data.isSessionOpen || false;
-                        updateDashboardUI(data);
-                    }
-                });
+                logDebug(`Session active (ID: ${user.uid.substring(0,6)}...)`, "info");
+                startStudioSync();
             } else {
-                signInAnonymously(auth);
+                logDebug("Session expirée ou non-autorisée", "error");
             }
         });
 
-        function updateDashboardUI(data) {
+        initAuth();
+
+        function startStudioSync() {
+            logDebug("Connexion Firestore en cours...", "info");
+            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
+            
+            onSnapshot(settingsRef, (snap) => {
+                if (snap.exists()) { 
+                    studioSettings = snap.data();
+                    logDebug("Données synchronisées avec succès", "info");
+                    updateUI(); 
+                } else {
+                    logDebug(`DOCUMENT MANQUANT: artifacts/${appId}/public/data/settings/main`, "error");
+                    logDebug("Veuillez créer ce document dans votre console Firebase.", "info");
+                }
+            }, (err) => {
+                logDebug(`ERREUR FIRESTORE: ${err.code}`, "error");
+                if(err.code === 'permission-denied') {
+                    logDebug("Règles de sécurité bloquantes ou ID incorrect.", "error");
+                }
+            });
+        }
+
+        function updateUI() {
             const statusBox = document.getElementById('status-box');
             const mainBtn = document.getElementById('main-action-btn');
             
             if (statusBox) {
+                const isOpen = studioSettings.isSessionOpen;
                 statusBox.innerHTML = `
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Statut Live</span>
-                        <span class="text-[9px] font-bold ${isSessionOpen ? 'text-green-600' : 'text-orange-600'} px-2 py-0.5 rounded-full bg-slate-100">${isSessionOpen ? 'OUVERT' : 'FERMÉ'}</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Les détails de la demande</span>
+                        <div class="flex items-center gap-1.5 px-2 py-1 ${isOpen ? 'bg-green-50' : 'bg-orange-50'} rounded-full border ${isOpen ? 'border-green-100' : 'border-orange-100'}">
+                            <div class="w-1.5 h-1.5 ${isOpen ? 'bg-green-500 animate-pulse' : 'bg-orange-500'} rounded-full"></div>
+                            <span class="text-[9px] font-bold ${isOpen ? 'text-green-600' : 'text-orange-600'}">${isOpen ? 'Session Ouverte' : 'En cours de traitement'}</span>
+                        </div>
                     </div>
-                    <h4 class="text-xs font-black text-slate-900 mb-1 uppercase tracking-tight">${data.statusTitle || 'LevelUp Studio'}</h4>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-bold">${data.statusDescription || 'Synchronisation...'}</p>
+                    <h4 class="text-xs font-black text-slate-900 mb-1 uppercase tracking-tight">${studioSettings.statusTitle || 'LevelUp Studio'}</h4>
+                    <p class="text-[10px] text-slate-500 leading-relaxed font-bold">${studioSettings.statusDescription || 'Mise à jour en attente...'}</p>
                 `;
             }
 
-            if (mainBtn) mainBtn.innerText = isSessionOpen ? "Demander un Edit" : "Session Fermée";
+            if (mainBtn) {
+                mainBtn.innerText = studioSettings.isSessionOpen ? "Demander un Edit" : "Session Fermée";
+            }
             
-            const p = data.progress || 0;
-            document.getElementById('main-progress-bar').style.width = `${p}%`;
-            document.getElementById('progress-percent').innerText = `${p}%`;
+            const p = studioSettings.progress || 0;
+            const progressBar = document.getElementById('main-progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
+            if (progressBar) progressBar.style.width = `${p}%`;
+            if (progressPercent) progressPercent.innerText = `${p}%`;
+            
+            const nodes = ['node-1', 'node-2', 'node-3', 'node-4'];
+            nodes.forEach((id, i) => {
+                const node = document.getElementById(id);
+                if (node) {
+                    const threshold = (i / (nodes.length - 1)) * 100;
+                    node.classList.remove('active', 'completed');
+                    if (p > threshold) node.classList.add('completed');
+                    else if (p === threshold || (i === 0 && p < 10)) node.classList.add('active');
+                }
+            });
             lucide.createIcons();
         }
 
-        // Boucle de rendu du Countdown
-        function tick() {
-            if (targetMillis > 0) {
-                const now = Date.now();
-                const diff = targetMillis - now;
-
-                if (diff <= 0) {
-                    ['days', 'hours', 'mins', 'secs'].forEach(id => document.getElementById(id).innerText = "00");
-                } else {
-                    document.getElementById('days').innerText = Math.floor(diff / 86400000).toString().padStart(2, '0');
-                    document.getElementById('hours').innerText = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
-                    document.getElementById('mins').innerText = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                    document.getElementById('secs').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                }
-            }
-            requestAnimationFrame(tick);
-        }
-        tick();
-
-        // UI Handlers
-        window.handleMainAction = () => {
-            if (isSessionOpen) {
-                document.getElementById('view-dashboard').classList.add('hidden-view');
-                document.getElementById('view-form').classList.remove('hidden-view');
+        setInterval(() => {
+            if (!studioSettings.targetDate) return;
+            
+            let target;
+            if (studioSettings.targetDate.seconds) {
+                target = studioSettings.targetDate.seconds * 1000;
             } else {
-                document.getElementById('session-modal').classList.add('active');
+                target = Number(studioSettings.targetDate);
             }
-        };
+
+            if (isNaN(target) || target <= 0) return;
+
+            const diff = target - Date.now();
+            
+            if (diff <= 0) {
+                ['days', 'hours', 'mins', 'secs'].forEach(id => document.getElementById(id).innerText = "00");
+                return;
+            }
+            
+            document.getElementById('days').innerText = Math.floor(diff / 86400000).toString().padStart(2, '0');
+            document.getElementById('hours').innerText = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
+            document.getElementById('mins').innerText = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            document.getElementById('secs').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        }, 1000);
 
         window.goToStep = (step) => {
             const pseudo = document.getElementById('f-pseudo').value;
             if (step === 2 && (!pseudo || pseudo.trim() === "")) {
-                document.getElementById('f-pseudo').style.borderColor = "#ef4444";
+                document.getElementById('f-pseudo').classList.add('border-red-500');
+                logDebug("ERREUR: Le pseudo est obligatoire.", "error");
                 return;
             }
             document.querySelectorAll('.form-step').forEach(s => s.classList.add('hidden-view'));
@@ -344,6 +443,7 @@
             el.classList.add('selected');
             document.getElementById('btn-next-step2').classList.remove('opacity-50', 'pointer-events-none');
             window.selectedCat = cat;
+            logDebug(`Catégorie sélectionnée: ${cat}`, "info");
         };
 
         window.updateCharCount = (el) => {
@@ -352,8 +452,12 @@
 
         window.submitFinalRequest = async () => {
             const details = document.getElementById('f-details').value;
-            if (!details) return;
+            if (!details || details.trim() === "") return;
+            const submitBtn = document.getElementById('btn-final-submit');
+            submitBtn.innerText = "Envoi...";
+            submitBtn.classList.add('opacity-50', 'pointer-events-none');
             try {
+                logDebug("Soumission de la requête au serveur...", "info");
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), {
                     pseudo: document.getElementById('f-pseudo').value,
                     email: document.getElementById('f-email').value,
@@ -361,9 +465,24 @@
                     details: details,
                     timestamp: Date.now()
                 });
+                logDebug("Requête enregistrée avec succès !", "info");
                 document.getElementById('view-form').classList.add('hidden-view');
                 document.getElementById('view-success').classList.remove('hidden-view');
-            } catch (e) { console.error(e); }
+                lucide.createIcons();
+            } catch (e) {
+                logDebug(`ÉCHEC DE L'ENVOI: ${e.code}`, "error");
+                submitBtn.innerText = "Réessayer";
+                submitBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        };
+
+        window.handleMainAction = () => {
+            if (studioSettings.isSessionOpen) {
+                document.getElementById('view-dashboard').classList.add('hidden-view');
+                document.getElementById('view-form').classList.remove('hidden-view');
+            } else {
+                document.getElementById('session-modal').classList.add('active');
+            }
         };
 
         window.showDashboard = () => {
@@ -371,7 +490,9 @@
             document.getElementById('view-dashboard').classList.remove('hidden-view');
         };
 
-        window.closeModal = () => document.getElementById('session-modal').classList.remove('active');
+        window.closeModal = () => {
+            document.getElementById('session-modal').classList.remove('active');
+        };
 
         window.addEventListener('load', () => {
             setTimeout(() => {
