@@ -77,27 +77,9 @@
             transition: all 0.2s; font-weight: 700; color: #64748b; text-align: center; background: #fff;
         }
         .cat-card.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; }
-
-        /* --- CONSOLE DE DEBUG AMELIOREE --- */
-        #debug-panel {
-            position: fixed; top: 10px; left: 10px; width: 300px; max-height: 200px;
-            background: rgba(0, 0, 0, 0.85); color: #0f0; font-family: 'JetBrains Mono', monospace; 
-            font-size: 10px; border-radius: 10px; padding: 12px; z-index: 10001; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-y: auto; pointer-events: none;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .debug-line { margin-bottom: 4px; border-left: 2px solid #0f0; padding-left: 6px; }
-        .debug-error { color: #ff4444; border-color: #ff4444; }
-        .debug-info { color: #44aaff; border-color: #44aaff; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-6 pb-12">
-
-    <!-- CONSOLE DE DEBUG GÉANTE -->
-    <div id="debug-panel">
-        <div style="font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 8px; padding-bottom: 4px;">LEVELUP SYSTEM LOGS</div>
-        <div id="debug-content"></div>
-    </div>
 
     <!-- LOADER -->
     <div id="intro-loader">
@@ -287,74 +269,35 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        
-        // --- GESTION LOGS CONSOLE IHM ---
-        const debugContent = document.getElementById('debug-content');
-        function logDebug(msg, type = "info") {
-            const time = new Date().toLocaleTimeString();
-            const line = document.createElement('div');
-            line.className = `debug-line ${type === 'error' ? 'debug-error' : type === 'info' ? 'debug-info' : ''}`;
-            line.innerHTML = `<span style="opacity: 0.5">[${time}]</span> ${msg}`;
-            
-            // On garde les 15 derniers messages pour ne pas saturer
-            if (debugContent.children.length > 15) {
-                debugContent.removeChild(debugContent.firstChild);
-            }
-            
-            debugContent.appendChild(line);
-            debugContent.scrollTop = debugContent.scrollHeight;
-            console.log(`[${type.toUpperCase()}] ${msg}`);
-        }
 
         let studioSettings = { 
             isSessionOpen: false, 
             progress: 0, 
-            targetDate: 0, 
+            targetDate: 0, // Sera un timestamp venant de Firebase
             statusTitle: "", 
             statusDescription: "" 
         };
 
         async function initAuth() {
-            logDebug("Tentative d'authentification...", "info");
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                logDebug(`ERREUR AUTH: ${err.message}`, "error");
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
             }
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                logDebug(`Session active (ID: ${user.uid.substring(0,6)}...)`, "info");
-                startStudioSync();
-            } else {
-                logDebug("Session expirée ou non-autorisée", "error");
-            }
+            if (user) startStudioSync();
         });
 
         initAuth();
 
         function startStudioSync() {
-            logDebug("Connexion Firestore en cours...", "info");
             const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-            
             onSnapshot(settingsRef, (snap) => {
                 if (snap.exists()) { 
                     studioSettings = snap.data();
-                    logDebug("Données synchronisées avec succès", "info");
                     updateUI(); 
-                } else {
-                    logDebug(`DOCUMENT MANQUANT: artifacts/${appId}/public/data/settings/main`, "error");
-                    logDebug("Veuillez créer ce document dans votre console Firebase.", "info");
-                }
-            }, (err) => {
-                logDebug(`ERREUR FIRESTORE: ${err.code}`, "error");
-                if(err.code === 'permission-denied') {
-                    logDebug("Règles de sécurité bloquantes ou ID incorrect.", "error");
                 }
             });
         }
@@ -402,18 +345,11 @@
         }
 
         setInterval(() => {
-            if (!studioSettings.targetDate) return;
-            
-            let target;
-            if (studioSettings.targetDate.seconds) {
-                target = studioSettings.targetDate.seconds * 1000;
-            } else {
-                target = Number(studioSettings.targetDate);
-            }
+            // Ici, studioSettings.targetDate doit être un nombre représentant les millisecondes (Timestamp)
+            // Exemple : 1735689600000 (31 déc 2024)
+            if (!studioSettings.targetDate || studioSettings.targetDate <= 0) return;
 
-            if (isNaN(target) || target <= 0) return;
-
-            const diff = target - Date.now();
+            const diff = studioSettings.targetDate - Date.now();
             
             if (diff <= 0) {
                 ['days', 'hours', 'mins', 'secs'].forEach(id => document.getElementById(id).innerText = "00");
@@ -426,11 +362,11 @@
             document.getElementById('secs').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
         }, 1000);
 
+        // Fonctions UI Globales
         window.goToStep = (step) => {
             const pseudo = document.getElementById('f-pseudo').value;
             if (step === 2 && (!pseudo || pseudo.trim() === "")) {
                 document.getElementById('f-pseudo').classList.add('border-red-500');
-                logDebug("ERREUR: Le pseudo est obligatoire.", "error");
                 return;
             }
             document.querySelectorAll('.form-step').forEach(s => s.classList.add('hidden-view'));
@@ -443,7 +379,6 @@
             el.classList.add('selected');
             document.getElementById('btn-next-step2').classList.remove('opacity-50', 'pointer-events-none');
             window.selectedCat = cat;
-            logDebug(`Catégorie sélectionnée: ${cat}`, "info");
         };
 
         window.updateCharCount = (el) => {
@@ -457,7 +392,6 @@
             submitBtn.innerText = "Envoi...";
             submitBtn.classList.add('opacity-50', 'pointer-events-none');
             try {
-                logDebug("Soumission de la requête au serveur...", "info");
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), {
                     pseudo: document.getElementById('f-pseudo').value,
                     email: document.getElementById('f-email').value,
@@ -465,12 +399,10 @@
                     details: details,
                     timestamp: Date.now()
                 });
-                logDebug("Requête enregistrée avec succès !", "info");
                 document.getElementById('view-form').classList.add('hidden-view');
                 document.getElementById('view-success').classList.remove('hidden-view');
                 lucide.createIcons();
             } catch (e) {
-                logDebug(`ÉCHEC DE L'ENVOI: ${e.code}`, "error");
                 submitBtn.innerText = "Réessayer";
                 submitBtn.classList.remove('opacity-50', 'pointer-events-none');
             }
