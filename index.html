@@ -115,16 +115,15 @@
                 <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em]">Edit</p>
             </div>
 
-            <!-- COUNTDOWN -->
+            <!-- COUNTDOWN (MODIFIÉ : SANS JOURS) -->
             <div class="text-center mb-10">
                 <div class="inline-block bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-6 border border-blue-100">
                     Prochains posts Dans :
                 </div>
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="flex flex-col"><span id="days" class="countdown-font text-3xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Jours</span></div>
-                    <div class="flex flex-col"><span id="hours" class="countdown-font text-3xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Heures</span></div>
-                    <div class="flex flex-col"><span id="mins" class="countdown-font text-3xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Mins</span></div>
-                    <div class="flex flex-col"><span id="secs" class="countdown-font text-3xl font-bold text-blue-600 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Secs</span></div>
+                <div class="grid grid-cols-3 gap-4 max-w-[300px] mx-auto">
+                    <div class="flex flex-col"><span id="hours" class="countdown-font text-4xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Heures</span></div>
+                    <div class="flex flex-col"><span id="mins" class="countdown-font text-4xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Mins</span></div>
+                    <div class="flex flex-col"><span id="secs" class="countdown-font text-4xl font-bold text-blue-600 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Secs</span></div>
                 </div>
             </div>
 
@@ -273,7 +272,7 @@
         let studioSettings = { 
             isSessionOpen: false, 
             progress: 0, 
-            targetDate: 0, // Sera un timestamp venant de Firebase
+            targetDate: 0, 
             statusTitle: "", 
             statusDescription: "" 
         };
@@ -345,24 +344,28 @@
         }
 
         setInterval(() => {
-            // Ici, studioSettings.targetDate doit être un nombre représentant les millisecondes (Timestamp)
-            // Exemple : 1735689600000 (31 déc 2024)
             if (!studioSettings.targetDate || studioSettings.targetDate <= 0) return;
 
             const diff = studioSettings.targetDate - Date.now();
             
             if (diff <= 0) {
-                ['days', 'hours', 'mins', 'secs'].forEach(id => document.getElementById(id).innerText = "00");
+                ['hours', 'mins', 'secs'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = "00";
+                });
                 return;
             }
             
-            document.getElementById('days').innerText = Math.floor(diff / 86400000).toString().padStart(2, '0');
-            document.getElementById('hours').innerText = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
-            document.getElementById('mins').innerText = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-            document.getElementById('secs').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            // Calcul sans les jours : on convertit toute la durée restante en heures totales
+            const totalHours = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            
+            if (document.getElementById('hours')) document.getElementById('hours').innerText = totalHours.toString().padStart(2, '0');
+            if (document.getElementById('mins')) document.getElementById('mins').innerText = m;
+            if (document.getElementById('secs')) document.getElementById('secs').innerText = s;
         }, 1000);
 
-        // Fonctions UI Globales
         window.goToStep = (step) => {
             const pseudo = document.getElementById('f-pseudo').value;
             if (step === 2 && (!pseudo || pseudo.trim() === "")) {
