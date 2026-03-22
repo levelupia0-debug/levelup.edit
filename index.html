@@ -1,6 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, Heart, Sparkles, PartyPopper, Stars, MailOpen } from 'lucide-react';
 
+// --- STYLES D'ANIMATION GLOBAUX ---
+// Sortir les styles du rendu est une meilleure pratique pour les performances
+const ANIMATION_STYLES = `
+  @keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 0.3; }
+    100% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
+    25% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
+    50% { transform: translateX(5px) rotate(5deg) scale(1.1); }
+    75% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
+  }
+  .animate-shake {
+    animation: shake 0.4s ease-in-out infinite;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-pop-in {
+    animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  @keyframes levelUp {
+    0% { transform: scale(0.5); opacity: 0; }
+    20% { transform: scale(1.2); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  .animate-level-up {
+    animation: levelUp 2s ease-in-out forwards;
+  }
+`;
+
 // Composant pour les petites particules flottantes en arrière-plan
 const FloatingParticles = () => {
   const [particles, setParticles] = useState([]);
@@ -33,37 +67,7 @@ const FloatingParticles = () => {
           }}
         />
       ))}
-      <style>{`
-        @keyframes float {
-          0% { transform: translateY(0) scale(1); opacity: 0.3; }
-          100% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
-          25% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-          50% { transform: translateX(5px) rotate(5deg) scale(1.1); }
-          75% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-        }
-        .animate-shake {
-          animation: shake 0.4s ease-in-out infinite;
-        }
-        @keyframes popIn {
-          0% { transform: scale(0.8); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in {
-          animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes levelUp {
-          0% { transform: scale(0.5); opacity: 0; }
-          20% { transform: scale(1.2); opacity: 1; }
-          80% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.5); opacity: 0; }
-        }
-        .animate-level-up {
-          animation: levelUp 2s ease-in-out forwards;
-        }
-      `}</style>
+      <style>{ANIMATION_STYLES}</style>
     </div>
   );
 };
