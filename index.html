@@ -1,440 +1,220 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LevelUp - Studio Dashboard</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'><path d='M12 2L14.81 8.62L22 9.24L16.5 13.97L18.18 21L12 17.27L5.82 21L7.5 13.97L2 9.24L9.19 8.62L12 2Z' /></svg>">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+import React, { useState, useEffect } from 'react';
+import { Gift, Heart, Sparkles, PartyPopper, Stars, MailOpen } from 'lucide-react';
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap');
+// Composant pour les petites particules flottantes en arrière-plan
+const FloatingParticles = () => {
+  const [particles, setParticles] = useState([]);
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            margin: 0;
-            overflow-x: hidden;
+  useEffect(() => {
+    const newParticles = Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 10 + 5,
+      animationDuration: Math.random() * 5 + 3,
+      delay: Math.random() * 2,
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute bg-white/30 rounded-full animate-pulse"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animation: `float ${p.animationDuration}s ease-in-out infinite alternate`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0) scale(1); opacity: 0.3; }
+          100% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
         }
-
-        /* --- LOADER --- */
-        #intro-loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; display: flex; align-items: center; justify-content: center;
-            z-index: 9999; transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.5s;
+        @keyframes shake {
+          0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
+          25% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
+          50% { transform: translateX(5px) rotate(5deg) scale(1.1); }
+          75% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
         }
-        .text-levelup { font-size: 3.5rem; font-weight: 800; color: #1e40af; letter-spacing: -0.05em; opacity: 0; transform: translateY(20px); animation: slide-up 0.8s ease-out forwards; }
-        .star-svg { width: 40px; height: 40px; fill: #3b82f6; animation: rotate-star 4s linear infinite; }
-        @keyframes rotate-star { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes slide-up { to { transform: translateY(0); opacity: 1; } }
-        .loader-hidden { transform: translateY(-100%) !important; }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 30px 60px -12px rgba(15, 23, 42, 0.12);
+        .animate-shake {
+          animation: shake 0.4s ease-in-out infinite;
         }
-
-        .countdown-font { font-family: 'JetBrains Mono', monospace; }
-
-        .progress-container { position: relative; height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-        .progress-bar-fill { 
-            position: absolute; height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); 
-            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        @keyframes popIn {
+          0% { transform: scale(0.8); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
         }
-
-        .step-node { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; position: relative; z-index: 2; border: 3px solid #fff; transition: all 0.3s; }
-        .step-node.active { background: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
-        .step-node.completed { background: #10b981; }
-
-        .status-info { background: #f8fafc; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #f1f5f9; }
-
-        .btn-action {
-            position: relative; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; align-items: center; justify-content: center; height: 72px;
-            font-weight: 700; border-radius: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
+        .animate-pop-in {
+          animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        .btn-submit { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.35); }
-        .btn-outline { border: 2px solid #e2e8f0; color: #64748b; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px;
+        @keyframes levelUp {
+          0% { transform: scale(0.5); opacity: 0; }
+          20% { transform: scale(1.2); opacity: 1; }
+          80% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.5); opacity: 0; }
         }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .hidden-view { display: none !important; }
-
-        .category-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .cat-card {
-            padding: 16px; border-radius: 1rem; border: 2px solid #f1f5f9; cursor: pointer;
-            transition: all 0.2s; font-weight: 700; color: #64748b; text-align: center; background: #fff;
+        .animate-level-up {
+          animation: levelUp 2s ease-in-out forwards;
         }
-        .cat-card.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; }
-    </style>
-</head>
-<body class="flex items-center justify-center min-h-screen p-6 pb-12">
-
-    <!-- LOADER -->
-    <div id="intro-loader">
-        <div class="logo-container flex flex-col items-center">
-            <div class="flex items-center gap-3">
-                <h1 class="text-levelup">LevelUp</h1>
-                <svg class="star-svg" viewBox="0 0 24 24"><path d="M12 2L14.81 8.62L22 9.24L16.5 13.97L18.18 21L12 17.27L5.82 21L7.5 13.97L2 9.24L9.19 8.62L12 2Z" /></svg>
-            </div>
-            <p class="text-[0.9rem] font-bold text-slate-400 uppercase tracking-[0.4em] mt-2">Edit</p>
-        </div>
+      `}</style>
     </div>
+  );
+};
 
-    <!-- MODALE SESSION FERMÉE -->
-    <div id="session-modal" class="modal-overlay" onclick="closeModal()">
-        <div class="modal-content glass-card rounded-[2.5rem] p-8 max-w-sm w-full text-center" onclick="event.stopPropagation()">
-            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="clock" class="w-8 h-8"></i>
-            </div>
-            <h3 class="text-xl font-extrabold text-slate-900 mb-4">Édit en cours...</h3>
-            <p class="text-slate-500 text-sm leading-relaxed mb-8">
-                Une demande est en cours de traitement. Revenez au plus vite à la fin du compte à rebours pour assurer d'avoir une place. N'oubliez pas de vous abonner !
-            </p>
-            <button onclick="closeModal()" class="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-sm uppercase tracking-widest">Compris</button>
-        </div>
-    </div>
+export default function App() {
+  // 0: Intro Level Up, 1: Accueil, 2: Animation d'ouverture, 3: Message final
+  const [step, setStep] = useState(0);
 
-    <main class="w-full max-w-lg opacity-0 transition-opacity duration-700">
+  // Gère le passage automatique de l'intro à la page d'accueil
+  useEffect(() => {
+    if (step === 0) {
+      const timer = setTimeout(() => {
+        setStep(1);
+      }, 2000); // L'animation d'intro dure 2 secondes pile
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  const handleOpenGift = () => {
+    setStep(2);
+    // Après 3 secondes d'animation (le cadeau qui tremble), on passe au message
+    setTimeout(() => {
+      setStep(3);
+    }, 3000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-300 to-indigo-300 flex items-center justify-center p-4 font-sans text-gray-800 relative">
+      <FloatingParticles />
+
+      <div className="max-w-md w-full relative z-10">
         
-        <!-- DASHBOARD VIEW -->
-        <div id="view-dashboard" class="glass-card rounded-[3.5rem] p-8 md:p-12">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-extrabold text-blue-900 tracking-tighter">LevelUp</h1>
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em]">Edit</p>
-            </div>
+        {/* ÉTAPE 0 : ANIMATION LEVEL UP */}
+        {step === 0 && (
+          <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+            <h1 className="text-6xl md:text-8xl font-black text-white tracking-widest uppercase animate-level-up drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]">
+              LEVEL UP
+            </h1>
+          </div>
+        )}
 
-            <!-- COUNTDOWN (MODIFIÉ : SANS JOURS) -->
-            <div class="text-center mb-10">
-                <div class="inline-block bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-6 border border-blue-100">
-                    Le compte a rebours est en cours de devellopement ...
-                </div>
-                <div class="grid grid-cols-3 gap-4 max-w-[300px] mx-auto">
-                    <div class="flex flex-col"><span id="hours" class="countdown-font text-4xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Heures</span></div>
-                    <div class="flex flex-col"><span id="mins" class="countdown-font text-4xl font-bold text-slate-900 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Mins</span></div>
-                    <div class="flex flex-col"><span id="secs" class="countdown-font text-4xl font-bold text-blue-600 tracking-tighter">00</span><span class="text-[8px] font-black text-slate-400 uppercase mt-2">Secs</span></div>
-                </div>
-            </div>
-
-            <!-- PROGRESS -->
-            <div class="mb-10 px-2">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progression du Montage</span>
-                    <span id="progress-percent" class="text-[10px] font-black text-blue-600 uppercase tracking-widest">0%</span>
-                </div>
-                <div class="progress-container">
-                    <div id="main-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
-                </div>
-                <div class="flex justify-between mt-4">
-                    <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-1" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">Soumis</span></div>
-                    <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-2" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">En attente</span></div>
-                    <div class="flex flex-col items-center gap-2 w-20 text-center"><div id="node-3" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">En cours de traitement</span></div>
-                    <div class="flex flex-col items-center gap-2 w-16 text-center"><div id="node-4" class="step-node mx-auto"></div><span class="text-[8px] font-bold text-slate-400 uppercase leading-tight">Publié</span></div>
-                </div>
-            </div>
-
-            <!-- STATUS BOX -->
-            <div id="status-box" class="status-info mb-8">
-                <div class="animate-pulse flex space-y-4 flex-col">
-                    <div class="h-2 bg-slate-200 rounded w-1/2"></div>
-                    <div class="h-4 bg-slate-200 rounded"></div>
-                </div>
-            </div>
-
-            <!-- BUTTONS -->
-            <div class="flex flex-col gap-4">
-                <button id="main-action-btn" onclick="handleMainAction()" class="btn-action btn-submit w-full">
-                    Chargement...
-                </button>
-                <a href="https://www.tiktok.com/@levelup.rb" target="_blank" class="btn-action btn-tiktok w-full" style="background-color: #000; color: #fff;">
-                    <svg class="h-[22px] mr-3" viewBox="0 0 448 512" fill="currentColor"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/></svg>
-                    Suivre sur TikTok
-                </a>
-            </div>
-        </div>
-
-        <!-- FORM MULTI-ETAPES -->
-        <div id="view-form" class="glass-card rounded-[3.5rem] p-10 hidden-view">
-            <div class="mb-8 flex justify-between items-center">
-                <h2 class="text-2xl font-extrabold text-slate-900">Demander un Édit</h2>
-                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Étape <span id="current-step-num">1</span> / 3</span>
-            </div>
-
-            <div id="step-1" class="form-step space-y-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-2 block">Pseudo (TikTok ou Instagram) *</label>
-                    <input type="text" id="f-pseudo" placeholder="@votre_pseudo" class="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none font-bold transition-all">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-2 block">Votre Email (Optionnel)</label>
-                    <input type="email" id="f-email" placeholder="mail@exemple.com" class="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none font-bold transition-all">
-                </div>
-                <button onclick="goToStep(2)" class="w-full btn-action btn-submit mt-4">Continuer</button>
-            </div>
-
-            <div id="step-2" class="form-step hidden-view space-y-5">
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 block mb-4">Choisissez une catégorie *</label>
-                <div class="category-grid">
-                    <div class="cat-card" onclick="selectCategory('Anime', this)">Anime</div>
-                    <div class="cat-card" onclick="selectCategory('Foot', this)">Foot</div>
-                    <div class="cat-card" onclick="selectCategory('Film & Série', this)">Film & Série</div>
-                    <div class="cat-card" onclick="selectCategory('Musique', this)">Musique</div>
-                    <div class="cat-card" onclick="selectCategory('Choix par tendance', this)">Choix par tendance</div>
-                </div>
-                <div class="flex gap-4 mt-6">
-                    <button onclick="goToStep(1)" class="flex-1 btn-action btn-outline">Retour</button>
-                    <button id="btn-next-step2" onclick="goToStep(3)" class="flex-[2] btn-action btn-submit opacity-50 pointer-events-none">Suivant</button>
-                </div>
-            </div>
-
-            <div id="step-3" class="form-step hidden-view space-y-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-2 block">Détails de l'édit & Musique *</label>
-                    <div class="relative">
-                        <textarea id="f-details" maxlength="250" oninput="updateCharCount(this)" placeholder="Explique ton idée, le son que tu aimerais qu'on utilise..." class="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-500 outline-none font-medium h-40 resize-none"></textarea>
-                        <span class="absolute bottom-4 right-4 text-[10px] font-black text-slate-300"><span id="char-count">0</span>/250</span>
-                    </div>
-                </div>
-                <div class="flex gap-4 mt-4">
-                    <button onclick="goToStep(2)" class="flex-1 btn-action btn-outline">Retour</button>
-                    <button id="btn-final-submit" onclick="submitFinalRequest()" class="flex-[2] btn-action btn-submit">Soumettre ma demande</button>
-                </div>
-            </div>
-
-            <button onclick="showDashboard()" class="w-full py-4 mt-6 text-slate-400 font-bold text-[10px] uppercase tracking-widest">Retour au Dashboard</button>
-        </div>
-
-        <!-- SUCCESS VIEW -->
-        <div id="view-success" class="glass-card rounded-[3.5rem] p-8 md:p-12 text-center hidden-view">
-            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-green-100/50">
-                <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+        {/* ÉTAPE 1 : PAGE D'ACCUEIL */}
+        {step === 1 && (
+          <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center border border-white/50 animate-pop-in">
+            <div className="flex justify-center mb-6">
+              <div className="bg-gradient-to-tr from-pink-400 to-purple-500 p-4 rounded-full text-white shadow-lg animate-bounce">
+                <PartyPopper size={48} />
+              </div>
             </div>
             
-            <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Demande soumise avec succès !</h2>
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600 mb-2">
+              Joyeux Anniversaire
+            </h1>
+            <h2 className="text-5xl font-black text-purple-700 mb-8 tracking-wide">
+              CHANCELLE !
+            </h2>
             
-            <div class="space-y-5 text-slate-600 text-[13px] font-semibold leading-relaxed mb-10 text-center">
-                <p>Votre demande prendra entre <span class="text-blue-600 font-bold">2 à 5 jours</span> pour être prête.</p>
-                
-                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-amber-800 text-xs text-left">
-                    <div class="flex items-center gap-2 mb-2 justify-center">
-                        <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                        <span class="font-black uppercase tracking-wider">Vérification de sécurité</span>
-                    </div>
-                    Le système vérifiera si votre compte est <strong>privé</strong> ou s'il <strong>existe</strong> réellement. Si vous avez un compte privé ou si vous avez fourni de faux identifiants, votre demande sera <strong>suspendue et rejetée</strong>.
-                </div>
-                
-                <p>Revenez de temps en temps pour voir l'avancée de votre demande.</p>
-                
-                <a href="https://levelupia0-debug.github.io/Level-up-condition-d-utilisation-est-de-s-curit-/" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-bold border-b-2 border-blue-100 pb-1 mt-2">
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                    Consulter notre page officielle
-                </a>
+            <p className="text-gray-600 mb-8 text-lg">
+              J'ai une petite surprise spéciale rien que pour toi...
+            </p>
+            
+            <button
+              onClick={handleOpenGift}
+              className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 rounded-full overflow-hidden shadow-xl transition-transform hover:scale-105 active:scale-95"
+            >
+              <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+              <span className="relative flex items-center gap-2 text-lg">
+                <Gift className="group-hover:animate-spin" size={24} />
+                Voir mon cadeau
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* ÉTAPE 2 : ANIMATION D'OUVERTURE */}
+        {step === 2 && (
+          <div className="flex flex-col items-center justify-center h-64 animate-pop-in">
+            <div className="relative">
+              <div className="absolute inset-0 bg-pink-400 blur-3xl opacity-50 rounded-full animate-pulse"></div>
+              <div className="relative bg-white p-8 rounded-full shadow-2xl animate-shake border-4 border-pink-300">
+                <Gift size={80} className="text-pink-500" />
+              </div>
             </div>
+            <p className="mt-8 text-2xl font-bold text-white tracking-widest animate-pulse">
+              Ouverture en cours...
+            </p>
+            <div className="flex gap-2 mt-4 text-yellow-300">
+              <Sparkles className="animate-ping" size={24} />
+              <Stars className="animate-ping" size={24} style={{ animationDelay: '0.2s' }} />
+              <Sparkles className="animate-ping" size={24} style={{ animationDelay: '0.4s' }} />
+            </div>
+          </div>
+        )}
 
-            <button onclick="location.reload()" class="w-full btn-action btn-submit">Retour au Hub</button>
-        </div>
-
-        <div class="mt-10 text-center">
-            <p class="text-[8px] font-black text-slate-300 tracking-[0.3em] uppercase">LevelUp © 2026</p>
-        </div>
-    </main>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyBBJGVLBN2a2-CaoSH4Jtn3aRjIHqOO-7E",
-            authDomain: "bonteia.firebaseapp.com",
-            projectId: "bonteia",
-            storageBucket: "bonteia.firebasestorage.app",
-            messagingSenderId: "665809390410",
-            appId: "1:665809390410:web:4fd0930b09aecd8f90cfb3"
-        };
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'levelup-studio';
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let studioSettings = { 
-            isSessionOpen: false, 
-            progress: 0, 
-            targetDate: 0, 
-            statusTitle: "", 
-            statusDescription: "" 
-        };
-
-        async function initAuth() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) startStudioSync();
-        });
-
-        initAuth();
-
-        function startStudioSync() {
-            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main');
-            onSnapshot(settingsRef, (snap) => {
-                if (snap.exists()) { 
-                    studioSettings = snap.data();
-                    updateUI(); 
-                }
-            });
-        }
-
-        function updateUI() {
-            const statusBox = document.getElementById('status-box');
-            const mainBtn = document.getElementById('main-action-btn');
+        {/* ÉTAPE 3 : LE MESSAGE D'AMOUR */}
+        {step === 3 && (
+          <div className="bg-white/90 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-pink-200 animate-pop-in">
+            <div className="flex justify-center mb-6">
+              <div className="bg-pink-100 p-4 rounded-full text-pink-500 shadow-inner">
+                <MailOpen size={40} />
+              </div>
+            </div>
             
-            if (statusBox) {
-                const isOpen = studioSettings.isSessionOpen;
-                statusBox.innerHTML = `
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Les détails de la demande</span>
-                        <div class="flex items-center gap-1.5 px-2 py-1 ${isOpen ? 'bg-green-50' : 'bg-orange-50'} rounded-full border ${isOpen ? 'border-green-100' : 'border-orange-100'}">
-                            <div class="w-1.5 h-1.5 ${isOpen ? 'bg-green-500 animate-pulse' : 'bg-orange-500'} rounded-full"></div>
-                            <span class="text-[9px] font-bold ${isOpen ? 'text-green-600' : 'text-orange-600'}">${isOpen ? 'Session Ouverte' : 'En cours de traitement'}</span>
-                        </div>
-                    </div>
-                    <h4 class="text-xs font-black text-slate-900 mb-1 uppercase tracking-tight">${studioSettings.statusTitle || 'LevelUp Studio'}</h4>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-bold">${studioSettings.statusDescription || 'Mise à jour en attente...'}</p>
-                `;
-            }
-
-            if (mainBtn) {
-                mainBtn.innerText = studioSettings.isSessionOpen ? "Demander un Edit" : "Session Fermée";
-            }
+            <h2 className="text-3xl font-bold text-center text-purple-800 mb-6">
+              Ma chère Chancelle,
+            </h2>
             
-            const p = studioSettings.progress || 0;
-            const progressBar = document.getElementById('main-progress-bar');
-            const progressPercent = document.getElementById('progress-percent');
-            if (progressBar) progressBar.style.width = `${p}%`;
-            if (progressPercent) progressPercent.innerText = `${p}%`;
+            <div className="space-y-3 md:space-y-4 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
+              <p>
+                Je te souhaite le plus merveilleux des anniversaires ! Aujourd'hui est ton jour, et je voulais prendre le temps de te dire à quel point tu comptes pour moi.
+              </p>
+              
+              <p>
+                Je me souviens encore de nos débuts sur HelloTalk... Tu m'avais confié que tu n'avais pas beaucoup d'amis à l'époque. C'est toi qui es venue me parler, et très vite, nous sommes devenus si proches. J'ai tout de suite senti que j'arrivais à te comprendre, à lire en toi, comme une évidence.
+              </p>
+              
+              <p>
+                J'ai fait de mon mieux pour t'aider et te soutenir quand tu essayais de conquérir le cœur de cet homme que tu aimais tant. Même si je n'ai pas pu faire grand-chose au final, je veux que tu saches que je serai toujours de ton côté. J'espère du fond du cœur que tu trouveras le meilleur, la personne qui te méritera vraiment.
+              </p>
+              
+              <p className="font-semibold text-pink-600 bg-pink-50 p-3 rounded-lg border-l-4 border-pink-400">
+                Tu es une personne si simple, authentique et infiniment précieuse. N'en doute jamais.
+              </p>
+              
+              <p>
+                Si jamais tu as un truc à partager, une peine, un doute ou une joie, n'hésite jamais. <span className="font-bold text-purple-700">Peu importe l'heure, je serai toujours là pour toi, pour t'écouter et t'aider.</span>
+              </p>
+              
+              <p>
+                Je sais que cette petite application ce n'est pas grand-chose... mais c'était mon seul moyen à moi de te souhaiter un joyeux anniversaire d'une façon un peu spéciale, et de te rappeler que je t'aiderai toujours à te faire plein d'amis qui verront ta vraie valeur.
+              </p>
+            </div>
             
-            const nodes = ['node-1', 'node-2', 'node-3', 'node-4'];
-            nodes.forEach((id, i) => {
-                const node = document.getElementById(id);
-                if (node) {
-                    const threshold = (i / (nodes.length - 1)) * 100;
-                    node.classList.remove('active', 'completed');
-                    if (p > threshold) node.classList.add('completed');
-                    else if (p === threshold || (i === 0 && p < 10)) node.classList.add('active');
-                }
-            });
-            lucide.createIcons();
-        }
-
-        setInterval(() => {
-            if (!studioSettings.targetDate || studioSettings.targetDate <= 0) return;
-
-            const diff = studioSettings.targetDate - Date.now();
+            <div className="mt-8 pt-6 border-t border-pink-100 flex flex-col items-center justify-center">
+              <Heart className="text-red-500 fill-red-500 animate-pulse mb-2" size={32} />
+              <p className="text-xl font-bold text-purple-800 mb-1">Je t'adore très fort !</p>
+              <p className="text-md text-gray-500 italic mt-2 font-medium">— Ton ami, LevelUp bro</p>
+            </div>
             
-            if (diff <= 0) {
-                ['hours', 'mins', 'secs'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = "00";
-                });
-                return;
-            }
-            
-            // Calcul sans les jours : on convertit toute la durée restante en heures totales
-            const totalHours = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-            
-            if (document.getElementById('hours')) document.getElementById('hours').innerText = totalHours.toString().padStart(2, '0');
-            if (document.getElementById('mins')) document.getElementById('mins').innerText = m;
-            if (document.getElementById('secs')) document.getElementById('secs').innerText = s;
-        }, 1000);
+            <div className="mt-8 flex justify-center">
+              <button 
+                onClick={() => setStep(1)}
+                className="text-sm text-gray-400 hover:text-pink-500 transition-colors flex items-center gap-1"
+              >
+                <Gift size={16} /> Refermer le cadeau
+              </button>
+            </div>
+          </div>
+        )}
 
-        window.goToStep = (step) => {
-            const pseudo = document.getElementById('f-pseudo').value;
-            if (step === 2 && (!pseudo || pseudo.trim() === "")) {
-                document.getElementById('f-pseudo').classList.add('border-red-500');
-                return;
-            }
-            document.querySelectorAll('.form-step').forEach(s => s.classList.add('hidden-view'));
-            document.getElementById(`step-${step}`).classList.remove('hidden-view');
-            document.getElementById('current-step-num').innerText = step;
-        };
-
-        window.selectCategory = (cat, el) => {
-            document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('btn-next-step2').classList.remove('opacity-50', 'pointer-events-none');
-            window.selectedCat = cat;
-        };
-
-        window.updateCharCount = (el) => {
-            document.getElementById('char-count').innerText = el.value.length;
-        };
-
-        window.submitFinalRequest = async () => {
-            const details = document.getElementById('f-details').value;
-            if (!details || details.trim() === "") return;
-            const submitBtn = document.getElementById('btn-final-submit');
-            submitBtn.innerText = "Envoi...";
-            submitBtn.classList.add('opacity-50', 'pointer-events-none');
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), {
-                    pseudo: document.getElementById('f-pseudo').value,
-                    email: document.getElementById('f-email').value,
-                    category: window.selectedCat,
-                    details: details,
-                    timestamp: Date.now()
-                });
-                document.getElementById('view-form').classList.add('hidden-view');
-                document.getElementById('view-success').classList.remove('hidden-view');
-                lucide.createIcons();
-            } catch (e) {
-                submitBtn.innerText = "Réessayer";
-                submitBtn.classList.remove('opacity-50', 'pointer-events-none');
-            }
-        };
-
-        window.handleMainAction = () => {
-            if (studioSettings.isSessionOpen) {
-                document.getElementById('view-dashboard').classList.add('hidden-view');
-                document.getElementById('view-form').classList.remove('hidden-view');
-            } else {
-                document.getElementById('session-modal').classList.add('active');
-            }
-        };
-
-        window.showDashboard = () => {
-            document.getElementById('view-form').classList.add('hidden-view');
-            document.getElementById('view-dashboard').classList.remove('hidden-view');
-        };
-
-        window.closeModal = () => {
-            document.getElementById('session-modal').classList.remove('active');
-        };
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('intro-loader').classList.add('loader-hidden');
-                document.querySelector('main').classList.remove('opacity-0');
-            }, 1000);
-        });
-    </script>
-</body>
-</html>
+      </div>
+    </div>
+  );
+}
