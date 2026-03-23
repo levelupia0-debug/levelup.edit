@@ -1,268 +1,322 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joyeux Anniversaire Chancelle !</title>
+import React, { useState, useEffect } from 'react';
+import { Gift, Heart, Sparkles, PartyPopper, BookOpenCheck, Terminal, Mail, Flower2 } from 'lucide-react';
+
+// --- STYLES D'ANIMATION GLOBAUX ---
+const ANIMATION_STYLES = `
+  @keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 0.05; }
+    100% { transform: translateY(-30px) scale(1.1); opacity: 0.2; }
+  }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2); transform: scale(1); }
+    70% { box-shadow: 0 0 40px 20px rgba(255, 255, 255, 0); transform: scale(1.02); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); transform: scale(1); }
+  }
+  .animate-pulse-glow {
+    animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes letterReveal {
+    0% { transform: translateY(30px); opacity: 0; filter: blur(10px); }
+    100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+  }
+  .animate-letter-reveal {
+    animation: letterReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: scale(0.95); filter: blur(5px); }
+    20% { opacity: 1; transform: scale(1); filter: blur(0); }
+    80% { opacity: 1; transform: scale(1); filter: blur(0); }
+    100% { opacity: 0; transform: scale(1.05); filter: blur(5px); }
+  }
+  .animate-fade-in-out {
+    animation: fadeInOut 2s ease-in-out forwards;
+  }
+  @keyframes shakeLetter {
+    0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px) rotate(-4deg) scale(1.1); }
+    20%, 40%, 60%, 80% { transform: translateX(4px) rotate(4deg) scale(1.1); }
+  }
+  .animate-shake-letter {
+    animation: shakeLetter 0.5s ease-in-out infinite;
+  }
+  @keyframes blinkRedWhite {
+    0%, 100% { color: #ffffff; fill: #ffffff; filter: drop-shadow(0 0 8px rgba(255,255,255,0.8)); }
+    50% { color: #ef4444; fill: #ef4444; filter: drop-shadow(0 0 12px rgba(239,68,68,0.8)); }
+  }
+  .animate-blink-heart {
+    animation: blinkRedWhite 1.5s ease-in-out infinite;
+  }
+  @keyframes swayFlower {
+    0%, 100% { transform: rotate(-10deg) scale(1); filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+    50% { transform: rotate(10deg) scale(1.1); filter: drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+  }
+  .animate-sway-flower {
+    animation: swayFlower 4s ease-in-out infinite;
+  }
+`;
+
+// Particules discrètes pour le thème sombre/premium
+const FloatingParticles = () => {
+  const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      animationDuration: Math.random() * 5 + 4,
+      delay: Math.random() * 2,
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute bg-white rounded-full"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animation: `float ${p.animationDuration}s ease-in-out infinite alternate`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+      <style>{ANIMATION_STYLES}</style>
+    </div>
+  );
+};
+
+// Composant Feu d'artifice (Premium Blanc/Argent)
+const PremiumFireworks = () => {
+  const canvasRef = React.useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
     
-    <!-- Chargement de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chargement de React et ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Chargement de Babel pour lire le JSX dans le navigateur -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-    <style>
-        /* Styles d'animation globaux */
-        @keyframes float {
-            0% { transform: translateY(0) scale(1); opacity: 0.3; }
-            100% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
-            25% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-            50% { transform: translateX(5px) rotate(5deg) scale(1.1); }
-            75% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-        }
-        .animate-shake {
-            animation: shake 0.4s ease-in-out infinite;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in {
-            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes levelUp {
-            0% { transform: scale(0.5); opacity: 0; }
-            20% { transform: scale(1.2); opacity: 1; }
-            80% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        .animate-level-up {
-            animation: levelUp 2s ease-in-out forwards;
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+    const particles = [];
+    const colors = ['#ffffff', '#f8fafc', '#e2e8f0', '#cbd5e1']; // Thème blanc/argent pour faire très "pro"
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        // --- COMPOSANTS ICÔNES (Remplacement de lucide-react pour éviter les bugs CDN) ---
-        const Gift = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
-        );
-        const Heart = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        );
-        const Sparkles = ({ size = 24, className = "", style }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-        );
-        const Stars = ({ size = 24, className = "", style }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        );
-        const PartyPopper = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>
-        );
-        const MailOpen = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21.2 8.4c.5.3.8.8.8 1.4v10.2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.8c0-.6.3-1.1.8-1.4l8-5.3c.7-.5 1.7-.5 2.4 0l8 5.3Z"/><path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"/></svg>
-        );
-
-        // --- COMPOSANT PARTICULES ---
-        const FloatingParticles = () => {
-            const [particles, setParticles] = useState([]);
-
-            useEffect(() => {
-                const newParticles = Array.from({ length: 20 }).map((_, i) => ({
-                    id: i,
-                    x: Math.random() * 100,
-                    y: Math.random() * 100,
-                    size: Math.random() * 10 + 5,
-                    animationDuration: Math.random() * 5 + 3,
-                    delay: Math.random() * 2,
-                }));
-                setParticles(newParticles);
-            }, []);
-
-            return (
-                <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                    {particles.map((p) => (
-                        <div
-                            key={p.id}
-                            className="absolute bg-white/40 rounded-full"
-                            style={{
-                                left: `${p.x}%`,
-                                top: `${p.y}%`,
-                                width: `${p.size}px`,
-                                height: `${p.size}px`,
-                                animation: `float ${p.animationDuration}s ease-in-out infinite alternate`,
-                                animationDelay: `${p.delay}s`,
-                            }}
-                        />
-                    ))}
-                </div>
-            );
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 1;
+        this.velocity = {
+          x: Math.cos(angle) * speed,
+          y: Math.sin(angle) * speed
         };
+        this.life = 100;
+        this.opacity = 1;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.size = Math.random() * 2.5 + 0.5;
+      }
+      draw() {
+        ctx.globalAlpha = this.opacity;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+      }
+      update() {
+        this.velocity.y += 0.04; // Gravité douce pour une chute élégante
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.life -= 1.2;
+        this.opacity = Math.max(0, this.life / 100);
+        this.draw();
+      }
+    }
 
-        // --- APPLICATION PRINCIPALE ---
-        function App() {
-            // 0: Intro Level Up, 1: Accueil, 2: Animation d'ouverture, 3: Message final
-            const [step, setStep] = useState(0);
+    const createFirework = () => {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * (canvas.height / 2); // Explosion principalement en haut de l'écran
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle(x, y));
+      }
+    };
 
-            useEffect(() => {
-                if (step === 0) {
-                    const timer = setTimeout(() => {
-                        setStep(1);
-                    }, 2000); 
-                    return () => clearTimeout(timer);
-                }
-            }, [step]);
+    // Lancement des feux d'artifice en arrière-plan
+    const launchInterval = setInterval(createFirework, 600);
+    createFirework(); // Un premier feu immédiat
 
-            const handleOpenGift = () => {
-                setStep(2);
-                setTimeout(() => {
-                    setStep(3);
-                }, 3000);
-            };
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-300 to-indigo-300 flex items-center justify-center p-4 font-sans text-gray-800 relative">
-                    <FloatingParticles />
-
-                    <div className="max-w-md w-full relative z-10">
-                        
-                        {/* ÉTAPE 0 : ANIMATION LEVEL UP */}
-                        {step === 0 && (
-                            <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
-                                <h1 className="text-6xl md:text-8xl font-black text-white tracking-widest uppercase animate-level-up drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]">
-                                    LEVEL UP
-                                </h1>
-                            </div>
-                        )}
-
-                        {/* ÉTAPE 1 : PAGE D'ACCUEIL */}
-                        {step === 1 && (
-                            <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center border border-white/50 animate-pop-in">
-                                <div className="flex justify-center mb-6">
-                                    <div className="bg-gradient-to-tr from-pink-400 to-purple-500 p-4 rounded-full text-white shadow-lg animate-bounce">
-                                        <PartyPopper size={48} />
-                                    </div>
-                                </div>
-                                
-                                <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600 mb-2">
-                                    Joyeux Anniversaire
-                                </h1>
-                                <h2 className="text-5xl font-black text-purple-700 mb-8 tracking-wide">
-                                    CHANCELLE !
-                                </h2>
-                                
-                                <p className="text-gray-600 mb-8 text-lg">
-                                    J'ai une petite surprise spéciale rien que pour toi...
-                                </p>
-                                
-                                <button
-                                    onClick={handleOpenGift}
-                                    className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 rounded-full overflow-hidden shadow-xl transition-transform hover:scale-105 active:scale-95"
-                                >
-                                    <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
-                                    <span className="relative flex items-center gap-2 text-lg">
-                                        <Gift className="group-hover:animate-spin" size={24} />
-                                        Voir mon cadeau
-                                    </span>
-                                </button>
-                            </div>
-                        )}
-
-                        {/* ÉTAPE 2 : ANIMATION D'OUVERTURE */}
-                        {step === 2 && (
-                            <div className="flex flex-col items-center justify-center h-64 animate-pop-in">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-pink-400 blur-3xl opacity-50 rounded-full animate-pulse"></div>
-                                    <div className="relative bg-white p-8 rounded-full shadow-2xl animate-shake border-4 border-pink-300">
-                                        <Gift size={80} className="text-pink-500" />
-                                    </div>
-                                </div>
-                                <p className="mt-8 text-2xl font-bold text-white tracking-widest animate-pulse drop-shadow-md">
-                                    Ouverture en cours...
-                                </p>
-                                <div className="flex gap-2 mt-4 text-yellow-300">
-                                    <Sparkles className="animate-ping" size={24} />
-                                    <Stars className="animate-ping" size={24} style={{ animationDelay: '0.2s' }} />
-                                    <Sparkles className="animate-ping" size={24} style={{ animationDelay: '0.4s' }} />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* ÉTAPE 3 : LE MESSAGE D'AMOUR */}
-                        {step === 3 && (
-                            <div className="bg-white/90 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-pink-200 animate-pop-in">
-                                <div className="flex justify-center mb-6">
-                                    <div className="bg-pink-100 p-4 rounded-full text-pink-500 shadow-inner">
-                                        <MailOpen size={40} />
-                                    </div>
-                                </div>
-                                
-                                <h2 className="text-3xl font-bold text-center text-purple-800 mb-6">
-                                    Ma chère Chancelle,
-                                </h2>
-                                
-                                <div className="space-y-3 md:space-y-4 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
-                                    <p>
-                                        Je te souhaite le plus merveilleux des anniversaires ! Aujourd'hui est ton jour, et je voulais prendre le temps de te dire à quel point tu comptes pour moi.
-                                    </p>
-                                    
-                                    <p>
-                                        Je me souviens encore de nos débuts sur HelloTalk... Tu m'avais confié que tu n'avais pas beaucoup d'amis à l'époque. C'est toi qui es venue me parler, et très vite, nous sommes devenus si proches. J'ai tout de suite senti que j'arrivais à te comprendre, à lire en toi, comme une évidence.
-                                    </p>
-                                    
-                                    <p>
-                                        J'ai fait de mon mieux pour t'aider et te soutenir quand tu essayais de conquérir le cœur de cet homme que tu aimais tant. Même si je n'ai pas pu faire grand-chose au final, je veux que tu saches que je serai toujours de ton côté. J'espère du fond du cœur que tu trouveras le meilleur, la personne qui te méritera vraiment.
-                                    </p>
-                                    
-                                    <p className="font-semibold text-pink-600 bg-pink-50 p-3 rounded-lg border-l-4 border-pink-400">
-                                        Tu es une personne si simple, authentique et infiniment précieuse. N'en doute jamais.
-                                    </p>
-                                    
-                                    <p>
-                                        Si jamais tu as un truc à partager, une peine, un doute ou une joie, n'hésite jamais. <span className="font-bold text-purple-700">Peu importe l'heure, je serai toujours là pour toi, pour t'écouter et t'aider.</span>
-                                    </p>
-                                    
-                                    <p>
-                                        Je sais que cette petite application ce n'est pas grand-chose... mais c'était mon seul moyen à moi de te souhaiter un joyeux anniversaire d'une façon un peu spéciale, et de te rappeler que je t'aiderai toujours à te faire plein d'amis qui verront ta vraie valeur.
-                                    </p>
-                                </div>
-                                
-                                <div className="mt-8 pt-6 border-t border-pink-100 flex flex-col items-center justify-center">
-                                    <Heart className="text-red-500 fill-red-500 animate-pulse mb-2" size={32} />
-                                    <p className="text-xl font-bold text-purple-800 mb-1">Je t'adore très fort !</p>
-                                    <p className="text-md text-gray-500 italic mt-2 font-medium">— Ton ami, LevelUp bro</p>
-                                </div>
-                                
-                                <div className="mt-8 flex justify-center">
-                                    <button 
-                                        onClick={() => setStep(1)}
-                                        className="text-sm text-gray-400 hover:text-pink-500 transition-colors flex items-center gap-1"
-                                    >
-                                        <Gift size={16} /> Refermer le cadeau
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                    </div>
-                </div>
-            );
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) {
+          particles.splice(i, 1);
         }
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
 
-        // Rendu de l'application
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      clearInterval(launchInterval);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-50 mix-blend-screen" />;
+};
+
+export default function App() {
+  // 0: Intro Premium, 1: Accueil, 2: Animation d'ouverture, 3: Message final
+  const [step, setStep] = useState(0);
+
+  // Gère le passage automatique de l'intro à la page d'accueil
+  useEffect(() => {
+    if (step === 0) {
+      const timer = setTimeout(() => {
+        setStep(1);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  const handleOpenGift = () => {
+    setStep(2);
+    // Après 3 secondes d'animation, on passe au message
+    setTimeout(() => {
+      setStep(3);
+    }, 3000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4 font-sans text-gray-200 relative selection:bg-gray-700 selection:text-white">
+      <FloatingParticles />
+
+      <div className="max-w-xl w-full relative z-10">
+        
+        {/* ÉTAPE 0 : ANIMATION INTRO (Sobre et Premium) */}
+        {step === 0 && (
+          <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+            <h1 className="text-4xl md:text-6xl font-light text-white tracking-[0.3em] uppercase animate-fade-in-out">
+              Initialisation
+            </h1>
+          </div>
+        )}
+
+        {/* ÉTAPE 1 : PAGE D'ACCUEIL */}
+        {step === 1 && (
+          <div className="bg-gray-900/60 backdrop-blur-xl p-10 rounded-2xl shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-gray-700/50 text-center animate-pop-in">
+            <div className="flex justify-center mb-8">
+              <div className="bg-gray-800/80 p-5 rounded-full text-white shadow-[0_0_30px_rgba(255,255,255,0.1)] border border-gray-600 relative">
+                {/* Effet de pulsation lumineuse en arrière-plan de la fleur */}
+                <div className="absolute inset-0 bg-white/10 rounded-full animate-ping opacity-30 duration-1000"></div>
+                {/* La fleur animée */}
+                <Flower2 className="animate-sway-flower text-white relative z-10" size={42} strokeWidth={1.5} />
+              </div>
+            </div>
+            
+            <h1 className="text-xl md:text-2xl font-light text-gray-400 mb-2 uppercase tracking-widest">
+              Joyeux Anniversaire
+            </h1>
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-10 tracking-tight">
+              KARL
+            </h2>
+            
+            <p className="text-gray-400 mb-10 text-lg font-light">
+              Une petite attention pour un vrai frère...
+            </p>
+            
+            <button
+          onClick={handleOpenGift}
+          className="group relative inline-flex items-center justify-center px-10 py-4 font-medium text-black bg-white rounded-full overflow-hidden transition-all hover:bg-gray-200 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-95 duration-300"
+        >
+          <span className="relative flex items-center gap-3 text-lg">
+            <Gift className="group-hover:scale-110 transition-transform duration-300" size={22} strokeWidth={2} />
+            Ouvrir le message
+          </span>
+        </button>
+      </div>
+    )}
+
+    {/* ÉTAPE 2 : ANIMATION D'OUVERTURE (Lettre qui se secoue violemment) */}
+    {step === 2 && (
+      <div className="flex flex-col items-center justify-center h-64 animate-letter-reveal">
+        <div className="relative">
+          <div className="absolute inset-0 bg-white blur-[80px] opacity-20 rounded-full"></div>
+          <div className="relative bg-gray-900 p-8 rounded-full border border-gray-500 animate-shake-letter shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+            <Mail size={50} className="text-white" strokeWidth={1.5} />
+          </div>
+        </div>
+        <p className="mt-12 text-sm font-medium text-white tracking-[0.3em] uppercase animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+          Ouverture de la lettre...
+        </p>
+      </div>
+    )}
+
+    {/* ÉTAPE 3 : LE MESSAGE POUR KARL (Format Lettre Pro avec Feux d'artifice) */}
+    {step === 3 && (
+      <>
+        <PremiumFireworks />
+        <div className="bg-gray-900/50 backdrop-blur-3xl p-8 md:p-14 rounded-3xl shadow-[0_0_80px_rgba(255,255,255,0.08)] border border-gray-600/50 animate-letter-reveal text-left relative overflow-hidden z-10">
+          
+          {/* Effet de lumière subtil en haut */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60"></div>
+          
+          <h2 className="text-3xl font-light text-white mb-10 pb-6 border-b border-gray-700/80 tracking-wide drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+            Salut Karl,
+          </h2>
+            
+            <div className="space-y-7 text-lg text-gray-300 font-light leading-relaxed">
+              <p>
+                Aujourd'hui c'est ton jour ! Je voulais absolument marquer le coup parce que tu es vraiment une personne exceptionnelle.
+              </p>
+              
+              <p>
+                Dire qu'on s'est connus sur HelloTalk... À l'époque, je ne pensais pas faire une rencontre aussi cool en ligne. Aujourd'hui, je te considère sincèrement comme un grand frère. T'es vraiment un gars en or, toujours droit et honnête.
+              </p>
+              
+              <p className="text-gray-400">
+                Je sais que je fais souvent des fautes (d'ailleurs, pardonne celles qui se sont sûrement glissées ici ! 😅), et je sais à quel point tu aimes me corriger. Même si ta manière de le faire m'énerve parfois — il faut bien l'avouer — au fond, ça me fait sourire, car c'est aussi grâce à ça que je m'améliore.
+              </p>
+              
+              <p>
+            Reste exactement comme tu es bro. Une personne cool, intelligente et sur qui on peut toujours compter. Ce petit site n'est pas grand-chose, mais c'est ma façon à moi de te souhaiter le meilleur pour cette nouvelle année.
+          </p>
+        </div>
+        
+        <div className="mt-14 pt-8 flex flex-col items-center justify-center text-center relative z-10">
+          <Heart className="animate-blink-heart mb-6" size={32} strokeWidth={1.5} />
+          <p className="text-xl font-light text-white tracking-widest uppercase mb-3 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">Joyeux Anniversaire mon frère</p>
+          <p className="text-sm text-gray-400 font-serif italic">— LevelUp bro</p>
+        </div>
+        
+        <div className="mt-12 flex justify-center relative z-10">
+          <button 
+            onClick={() => setStep(1)}
+            className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-2 uppercase tracking-[0.2em] hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+          >
+            Fermer la lettre
+          </button>
+        </div>
+      </div>
+      </>
+    )}
+
+  </div>
+</div>
+);
+}
